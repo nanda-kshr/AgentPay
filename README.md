@@ -1,37 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AgentPay ⚡
 
-## Getting Started
+> **Autonomous Machine Commerce & Ephemeral Payment Protocol Simulator**  
+> Built with Next.js, TypeScript, Tailwind CSS, and MongoDB.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 📌 Overview
+
+**AgentPay** is an autonomous-commerce protocol simulator demonstrating how AI agents can safely perform financial transactions without relying on legacy OTP/human-in-the-loop payment flows.
+
+Instead of granting an AI agent persistent access to funds or credit cards, AgentPay uses **bounded, short-lived ephemeral credentials (60s TTL)** that are cryptographically locked to a specific merchant, amount, purpose, transaction ID, and single-use nonce.
+
+Travel is used as the initial intuitive scenario (flights, hotels, transport, experiences, shopping), but the underlying protocol applies to cloud compute, API micropayments, SaaS procurement, and M2M autonomous settlements.
+
+---
+
+## 🔒 The 7-Step Payment Execution Pipeline
+
+```
+Agent Verified ➔ Merchant Verified ➔ Policy Checked ➔ Ephemeral Credential Issued ➔ Tx Authorized ➔ Payment Executed ➔ Receipt Verified
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Agent Verified**: Validates the agent identity, reputation score, and public key.
+2. **Merchant Verified**: Confirms the merchant's cryptographic identity and destination registry.
+3. **Policy Checked**: Enforces merchant-defined security constraints (max transaction limit, currency, agent whitelist).
+4. **Ephemeral Credential Issued**: Generates a single-use token valid for 60 seconds with an HMAC-SHA256 signature and cryptographic nonce.
+5. **Transaction Authorized**: Binds token strictly to the target transaction and amount.
+6. **Payment Executed**: Mock payment gateway verifies signature, nonce freshness, and authorization boundaries before updating ledger.
+7. **Receipt Verified**: Produces an immutable, machine-readable cryptographic receipt containing a SHA-256 state hash.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛡️ Security Simulator (Attack Vectors)
 
-## Learn More
+AgentPay includes a dedicated interactive security playground demonstrating protection against compromised or intercepted tokens:
 
-To learn more about Next.js, take a look at the following resources:
+| Attack Vector | Simulated Behavior | Gateway Decision |
+| :--- | :--- | :--- |
+| **Amount Tampering** | Attacker attempts to charge \$999 on a \$260 authorization | `Blocked — authorization mismatch` |
+| **Merchant Redirection** | Diverts funds to rogue merchant (`merch_rogue_shadow_corp`) | `Blocked — merchant mismatch` |
+| **Nonce Replay** | Replays an already consumed token | `Blocked — nonce already consumed` |
+| **Credential Expiry** | Submits valid token after 60s lifetime has elapsed | `Blocked — credential expired` |
+| **Signature Forgery** | Submits tampered HMAC signature | `Blocked — cryptographic signature mismatch` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🗄️ MongoDB Collections
 
-## Deploy on Vercel
+The system stores and manages state across 8 MongoDB collections:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `merchants`: Merchant identity, category, destination, public key, and security policy rules.
+- `products`: Catalog items, price tiers, inventory, and category tags.
+- `agents`: Autonomous agent profiles, public keys, and reputation scores.
+- `trip_requests`: User prompts, budget, comfort level, and constraint records.
+- `recommendations`: Agent-optimized multi-merchant itineraries and selection reasoning.
+- `authorizations`: Short-lived single-use ephemeral credentials with status (`active` / `consumed`).
+- `transactions`: Completed settlement logs.
+- `receipts`: Signed machine-readable cryptographic receipts.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# AgentPay
+---
+
+## 🚀 Quick Start
+
+### 1. Prerequisites
+- Node.js 18+
+- MongoDB instance (Atlas or local `mongod`)
+
+### 2. Configure Environment Variables
+Create a `.env` file in the root directory:
+
+```env
+MONGO_URI=mongodb://localhost:27017/agentpay
+AGENTPAY_SECRET_KEY=your-secure-cryptographic-signing-key
+```
+
+### 3. Install & Run
+```bash
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 📂 Project Structure
+
+```
+├── app/
+│   ├── api/
+│   │   ├── init/          # Initializes DB collections & seeds marketplace
+│   │   ├── plan/          # Autonomous itinerary planner & constraint solver
+│   │   ├── authorize/     # Ephemeral credential generator (HMAC-SHA256)
+│   │   ├── pay/           # Mock gateway processor & receipt signer
+│   │   ├── attack/        # Security attack test bench
+│   │   └── transactions/  # Ledger of verified receipts
+│   ├── globals.css        # Tailwind CSS styles
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Interactive UI (Simulator, Attacks, Policies, Ledger)
+├── lib/
+│   ├── crypto.ts          # HMAC-SHA256, nonce generator, and verification helpers
+│   ├── db.ts              # MongoDB connection client singleton
+│   ├── engine.ts          # Planning engine & payment gateway validation logic
+│   ├── seed-data.ts       # Predefined merchants, catalog products, and policies
+│   └── types.ts           # Core TypeScript interfaces
+└── package.json
+```
