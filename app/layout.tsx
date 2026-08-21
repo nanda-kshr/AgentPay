@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'AgentPay — Autonomous Machine Commerce Protocol',
-  description: 'Simulated autonomous machine-to-machine commerce with ephemeral cryptographic payment credentials and receipt verification.',
+  title: 'AgentPay — Autonomous Commerce Protocol',
+  description: 'Minimalist autonomous machine-to-machine commerce simulator with Agentic and Shopkeeper views.',
 };
 
 export default function RootLayout({
@@ -23,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}>
-      <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100">{children}</body>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-900">{children}</body>
     </html>
   );
 }
